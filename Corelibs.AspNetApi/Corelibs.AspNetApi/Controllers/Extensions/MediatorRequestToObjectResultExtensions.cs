@@ -21,6 +21,9 @@ namespace Corelibs.AspNetApi.Controllers.Extensions
         public static Task<IActionResult> SendAndGetPatchResponse(this IMediator mediator, ICommand<Result> command) =>
             mediator.Send(command).GetPatchCommandResponse();
 
+        public static Task<IActionResult> SendAndGetPutResponse(this IMediator mediator, ICommand<Result> command) =>
+            mediator.Send(command).GetPutCommandResponse();
+
         public static Task<IActionResult> SendAndGetDeleteResponse(this IMediator mediator, ICommand<Result> command) =>
             mediator.Send(command).GetDeleteCommandResponse();
     }

@@ -22,6 +22,15 @@ namespace Corelibs.AspNetApi.Controllers.Extensions
             };
 
         public static ObjectResult To204Result(this string errorMessage) =>
-            Result.Failure(errorMessage).To404();
+            Result.Failure(errorMessage).To204();
+
+        public static ObjectResult To200(this Result result) =>
+            new ObjectResult(result)
+            {
+                StatusCode = StatusCodes.Status200OK;
+            };
+
+        public static ObjectResult To200Result(this string errorMessage) =>
+            Result.Failure(errorMessage).To200();
     }
 }

@@ -50,5 +50,17 @@ namespace Corelibs.AspNetApi.Controllers.Extensions
 
             return result.To204();
         }
+
+        public static async Task<IActionResult> GetPutCommandResponse(this ValueTask<Result> task)
+        {
+            var result = await task;
+            if (result == null)
+                return "Something went wrong".To404Result();
+
+            if (result.ValidateSuccessAndValues())
+                return result.To404();
+
+            return result.To200();
+        }
     }
 }
