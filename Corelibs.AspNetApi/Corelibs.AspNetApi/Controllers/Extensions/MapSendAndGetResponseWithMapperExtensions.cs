@@ -13,5 +13,33 @@ namespace Corelibs.AspNetApi.Controllers.Extensions
             var appQuery = mapper.Map<TAppQuery>(query);
             return mediator.SendAndGetResponse(appQuery);
         }
+
+        public static Task<IActionResult> MapSendAndGetPostResponse<TAppCommand>(this IMediator mediator, object command, IMapper mapper)
+            where TAppCommand : ICommand<Result>
+        {
+            var appCommand = mapper.Map<TAppCommand>(command);
+            return mediator.SendAndGetPostResponse(appCommand);
+        }
+
+        public static Task<IActionResult> MapSendAndGetPatchResponse<TAppCommand>(this IMediator mediator, object command, IMapper mapper)
+           where TAppCommand : ICommand<Result>
+        {
+            var appCommand = mapper.Map<TAppCommand>(command);
+            return mediator.SendAndGetPatchResponse(appCommand);
+        }
+
+        public static Task<IActionResult> MapSendAndGetPutResponse<TAppCommand>(this IMediator mediator, object command, IMapper mapper)
+           where TAppCommand : ICommand<Result>
+        {
+            var appCommand = mapper.Map<TAppCommand>(command);
+            return mediator.SendAndGetPutResponse(appCommand);
+        }
+
+        public static Task<IActionResult> MapSendAndGetDeleteResponse<TAppCommand>(this IMediator mediator, object command, IMapper mapper)
+           where TAppCommand : ICommand<Result>
+        {
+            var appCommand = mapper.Map<TAppCommand>(command);
+            return mediator.SendAndGetDeleteResponse(appCommand);
+        }
     }
 }
