@@ -27,16 +27,16 @@ namespace Corelibs.AspNetApi
         public static async Task InitilizeDatabase<TDbContext>(this IServiceProvider serviceProvider)
             where TDbContext : DbContext
         {
-            using (var scope = serviceProvider.CreateScope())
-            {
-                var ctx = scope.ServiceProvider.GetRequiredService<IDbContextFactory<TDbContext>>().CreateDbContext();
-                ctx.Database.EnsureCreated();
+            //using (var scope = serviceProvider.CreateScope())
+            //{
+            //    var ctx = scope.ServiceProvider.GetRequiredService<IDbContextFactory<TDbContext>>().CreateDbContext();
+            //    ctx.Database.EnsureCreated();
 
-                if ((await ctx.Database.GetPendingMigrationsAsync()).Any())
-                {
-                    await ctx.Database.MigrateAsync();
-                }
-            }
+            //    if ((await ctx.Database.GetPendingMigrationsAsync()).Any())
+            //    {
+            //        await ctx.Database.MigrateAsync();
+            //    }
+            //}
         }
     }
 }
