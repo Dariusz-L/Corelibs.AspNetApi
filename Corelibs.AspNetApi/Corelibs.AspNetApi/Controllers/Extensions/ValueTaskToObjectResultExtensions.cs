@@ -5,10 +5,14 @@ namespace Corelibs.AspNetApi.Controllers.Extensions
 {
     public static class ValueTaskToObjectResultExtensions
     {
-        public static async Task<IActionResult> GetQueryResponse<T>(this ValueTask<T> task)
+        public static async Task<IActionResult> GetQueryResponse<T>(this ValueTask<Result<T>> task)
             where T : class
         {
-            var value = await task;
+            var result = await task;
+            if (result == null)
+                return new NoContentResult();
+
+            var value = result.Get();
             if (value == null)
                 return new NoContentResult();
 

@@ -6,10 +6,13 @@ namespace Corelibs.AspNetApi.Controllers.Extensions
 {
     public static class MediatorRequestToObjectResultExtensions
     {
-        public static Task<IActionResult> SendAndGetResponse<TReturnValue, TQuery>(this IMediator mediator) where TQuery : IQuery<Result<TReturnValue>>, new() =>
+        public static Task<IActionResult> SendAndGetResponse<TReturnValue, TQuery>(this IMediator mediator) 
+            where TQuery : IQuery<Result<TReturnValue>>, new()
+            where TReturnValue : class =>
             mediator.Send(new TQuery()).GetQueryResponse();
 
-        public static Task<IActionResult> SendAndGetResponse<TReturnValue>(this IMediator mediator, IQuery<Result<TReturnValue>> query) =>
+        public static Task<IActionResult> SendAndGetResponse<TReturnValue>(this IMediator mediator, IQuery<Result<TReturnValue>> query)
+            where TReturnValue : class =>
             mediator.Send(query).GetQueryResponse();
 
         public static Task<IActionResult> SendAndGetPostResponse<TCommand>(this IMediator mediator) where TCommand : ICommand<Result>, new() =>

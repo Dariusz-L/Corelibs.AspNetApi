@@ -9,6 +9,7 @@ namespace Corelibs.AspNetApi.Controllers.Extensions
     {
         public static Task<IActionResult> MapSendAndGetResponse<TAppQuery, TReturnValue>(this IMediator mediator, object query, IMapper mapper)
             where TAppQuery : IQuery<Result<TReturnValue>>
+            where TReturnValue : class 
         {
             var appQuery = mapper.Map<TAppQuery>(query);
             return mediator.SendAndGetResponse(appQuery);
