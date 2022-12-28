@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using static System.Formats.Asn1.AsnWriter;
 
 namespace Corelibs.AspNetApi
@@ -12,8 +13,11 @@ namespace Corelibs.AspNetApi
             where TDbContext : DbContext
         {
             var conn = GetDBConnectionString(environment, getConfigDevConnectionString);
-            services.AddDbContextFactory<TDbContext>(
-                opts => opts.UseSqlServer(conn));
+
+            services.AddDbContext<TDbContext>((sp, opts) =>
+            {
+                opts.UseSqlServer(conn);
+            });
         }
 
         public static string GetDBConnectionString(IHostEnvironment environment, Func<string, string> getConfigDevConnectionString)
@@ -22,21 +26,6 @@ namespace Corelibs.AspNetApi
                 return getConfigDevConnectionString("MSSqlDB");
             else
                 return Environment.GetEnvironmentVariable("MSSqlDB");
-        }
-
-        public static async Task InitilizeDatabase<TDbContext>(this IServiceProvider serviceProvider)
-            where TDbContext : DbContext
-        {
-            //using (var scope = serviceProvider.CreateScope())
-            //{
-            //    var ctx = scope.ServiceProvider.GetRequiredService<IDbContextFactory<TDbContext>>().CreateDbContext();
-            //    ctx.Database.EnsureCreated();
-
-            //    if ((await ctx.Database.GetPendingMigrationsAsync()).Any())
-            //    {
-            //        await ctx.Database.MigrateAsync();
-            //    }
-            //}
         }
     }
 }
