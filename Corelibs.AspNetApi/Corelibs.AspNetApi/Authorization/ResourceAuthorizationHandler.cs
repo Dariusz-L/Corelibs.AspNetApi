@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Corelibs.AspNetApi.Authorization
 {
-    public class ResourceAuthorizationHandler<TResource> : AuthorizationHandler<SameAuthorRequirement>
+    public class ResourceAuthorizationHandler<TResource> : AuthorizationHandler<SameOwnerRequirement<TResource>>
         where TResource : IEntity, IOwnedEntity
     {
         private readonly IServiceProvider _serviceProvider;
@@ -23,7 +23,7 @@ namespace Corelibs.AspNetApi.Authorization
 
         protected override async Task HandleRequirementAsync(
             AuthorizationHandlerContext context,
-            SameAuthorRequirement requirement)
+            SameOwnerRequirement<TResource> requirement)
         {
             var userID = context.User.GetUserID();
             if (userID.IsNullOrEmpty())
@@ -54,7 +54,7 @@ namespace Corelibs.AspNetApi.Authorization
 
                 var result = new Result();
                 var resource = await _resourceRespository.Get(resourceID, result);
-
+                
                 if (userID == resource.OwnerID)
                     context.Succeed(requirement);
                 else
@@ -63,5 +63,20 @@ namespace Corelibs.AspNetApi.Authorization
         }
     }
 
-    public class SameAuthorRequirement : IAuthorizationRequirement { }
+    public class SameOwnerRequirement<TResource> : IAuthorizationRequirement 
+        where TResource : IEntity, IOwnedEntity
+    { }
+
+    public static class ResourceAuthorizationExtensions
+    {
+        public static void AddPolicyAndHandler<TResource>(this IServiceCollection services, AuthorizationOptions options)
+            where TResource : IEntity, IOwnedEntity
+        {
+            var resourceName = typeof(TResource).Name;
+            options.AddPolicy(AuthPolicies.Edit + resourceName, policy =>
+                policy.Requirements.Add(new SameOwnerRequirement<TResource>()));
+
+            //services.AddSingleton<IAuthorizationHandler, ResourceAuthorizationHandler<TResource>>();
+        }
+    }
 }
