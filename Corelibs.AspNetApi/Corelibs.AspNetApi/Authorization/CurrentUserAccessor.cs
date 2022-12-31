@@ -6,16 +6,16 @@ namespace Corelibs.AspNetApi.Authorization
 {
     public class CurrentUserAccessor : IAccessor<CurrentUser>
     {
-        private readonly HttpContext _httpContext;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public CurrentUserAccessor(HttpContext httpContext)
+        public CurrentUserAccessor(IHttpContextAccessor httpContextAccessor)
         {
-            _httpContext = httpContext;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public CurrentUser Get()
         {
-            var userID = _httpContext.User.GetUserID();
+            var userID = _httpContextAccessor.HttpContext.User.GetUserID();
             return new CurrentUser(userID);
         }
     }
