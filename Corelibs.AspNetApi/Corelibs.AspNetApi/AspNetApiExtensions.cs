@@ -1,4 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Common.Basic.Repository;
+using Corelibs.AspNetApi.Authorization;
+using Corelibs.Basic.Architecture.DDD;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -16,6 +19,8 @@ namespace Corelibs.AspNetApi
             {
                 opts.UseSqlServer(conn);
             });
+
+            services.AddScoped<IAccessor<CurrentUser>, CurrentUserAccessor>();
         }
 
         public static string GetDBConnectionString(IHostEnvironment environment, Func<string, string> getConfigDevConnectionString)
