@@ -6,16 +6,19 @@ using Lucene.Net.QueryParsers.Classic;
 using Lucene.Net.Search;
 using Lucene.Net.Store;
 using Lucene.Net.Util;
+using System.IO;
 
 namespace Corelibs.AspNetApi.Lucene
 {
-    public class LuceneInRamSearchEngine<T> : ISearchEngine<T>
+    public class LuceneInRamSearchEngine<T> : ISearchEngine<T>, IDisposable
     {
         private const LuceneVersion Version = LuceneVersion.LUCENE_48;
 
         private readonly StandardAnalyzer _analazer;
         private readonly RAMDirectory _directory;
         private readonly IndexWriter _indexWriter;
+
+        private static readonly object _lock = new();
 
         public LuceneInRamSearchEngine() 
         {
@@ -26,7 +29,14 @@ namespace Corelibs.AspNetApi.Lucene
             _indexWriter = new IndexWriter(_directory, config);
         }
 
-        public void Add(SearchIndexData data)
+        public void Dispose()
+        {
+            _indexWriter.Dispose();
+            _directory.Dispose();
+            _analazer.Dispose();
+        }
+
+        public bool Add(SearchIndexData data)
         {
             var doc = new Document
             {
@@ -34,26 +44,59 @@ namespace Corelibs.AspNetApi.Lucene
                 new TextField("name", data.Name, Field.Store.YES)
             };
 
-            _indexWriter.AddDocument(doc);
-            _indexWriter.Commit();
+            return LockAndTry(() =>
+            {
+                _indexWriter.AddDocument(doc);
+                _indexWriter.Commit();
+            });
         }
 
-        public void Add(IEnumerable<SearchIndexData> data)
+        public bool Add(IEnumerable<SearchIndexData> data)
         {
-            foreach (var i in data)
+            return LockAndTry(() =>
             {
+                foreach (var i in data)
+                {
+                    var doc = new Document
+                    {
+                        new StringField("id", i.ID, Field.Store.YES),
+                        new TextField("name", i.Name, Field.Store.YES)
+                    };
+
+                    _indexWriter.AddDocument(doc);
+                }
+                _indexWriter.Commit();
+            });
+        }
+
+        public bool Update(SearchIndexData data, string newName)
+        {
+            return LockAndTry(() =>
+            {
+                var term = new Term(data.ID, data.Name);
                 var doc = new Document
                 {
-                    new StringField("id", i.ID, Field.Store.YES),
-                    new TextField("name", i.Name, Field.Store.YES)
+                    new StringField("id", data.ID, Field.Store.YES),
+                    new TextField("name", newName, Field.Store.YES)
                 };
-                _indexWriter.AddDocument(doc);
-            }
 
-            _indexWriter.Commit();
+                _indexWriter.UpdateDocument(term, doc);
+                _indexWriter.Commit();
+            });
         }
 
-        public SearchIndexData[] Search(string searchTerm, SearchType searchType = SearchType.Full)
+        public bool Delete(SearchIndexData data)
+        {
+            return LockAndTry(() =>
+            {
+                var term = new Term(data.ID, data.Name);
+
+                _indexWriter.DeleteDocuments(term);
+                _indexWriter.Commit();
+            });
+        }
+
+        public SearchIndexData[] Search(string searchTerm, SearchType searchType = SearchType.Substring)
         {
             var directoryReader = DirectoryReader.Open(_directory);
             var indexSearcher = new IndexSearcher(directoryReader);
@@ -77,6 +120,26 @@ namespace Corelibs.AspNetApi.Lucene
             }
 
             return result.ToArray();
+        }
+
+        private bool LockAndTry(Action action)
+        {
+            Monitor.Enter(_lock);
+
+            try
+            {
+                action();
+            }
+            catch (SynchronizationLockException ex)
+            {
+                return false;
+            }
+            finally
+            {
+                Monitor.Exit(_lock);
+            }
+
+            return true;
         }
     }
 }
