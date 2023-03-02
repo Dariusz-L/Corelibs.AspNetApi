@@ -20,4 +20,8 @@
     <PackageReference Include="Lucene.Net.Analysis.Common" Version="4.8.0-beta00016" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Corelibs.Basic\Corelibs.Basic\Corelibs.Basic\Corelibs.Basic.csproj" />
+  </ItemGroup>
+
 </Project>

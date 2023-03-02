@@ -53,7 +53,7 @@ namespace Corelibs.AspNetApi.Lucene
             _indexWriter.Commit();
         }
 
-        public SearchIndexData[] Search(string searchTerm)
+        public SearchIndexData[] Search(string searchTerm, SearchType searchType = SearchType.Full)
         {
             var directoryReader = DirectoryReader.Open(_directory);
             var indexSearcher = new IndexSearcher(directoryReader);
