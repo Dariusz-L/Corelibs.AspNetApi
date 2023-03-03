@@ -1,5 +1,8 @@
 ﻿using Corelibs.Basic.Searching;
+using Lucene.Net.Analysis;
+using Lucene.Net.Analysis.Core;
 using Lucene.Net.Analysis.Standard;
+using Lucene.Net.Analysis.Util;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using Lucene.Net.QueryParsers.Classic;
@@ -14,7 +17,7 @@ namespace Corelibs.AspNetApi.Lucene
     {
         private const LuceneVersion Version = LuceneVersion.LUCENE_48;
 
-        private readonly StandardAnalyzer _analazer;
+        private readonly Analyzer _analyzer;
         private readonly RAMDirectory _directory;
         private readonly IndexWriter _indexWriter;
 
@@ -22,10 +25,12 @@ namespace Corelibs.AspNetApi.Lucene
 
         public LuceneInRamSearchEngine() 
         {
-            _analazer = new StandardAnalyzer(Version);
+            //_analyzer = new StandardAnalyzer(Version, CharArraySet.EMPTY_SET);
+            _analyzer = new SimpleAnalyzer(Version);
+            
             _directory = new RAMDirectory();
 
-            var config = new IndexWriterConfig(Version, _analazer);
+            var config = new IndexWriterConfig(Version, _analyzer);
             _indexWriter = new IndexWriter(_directory, config);
         }
 
@@ -33,7 +38,7 @@ namespace Corelibs.AspNetApi.Lucene
         {
             _indexWriter.Dispose();
             _directory.Dispose();
-            _analazer.Dispose();
+            _analyzer.Dispose();
         }
 
         public bool Add(SearchIndexData data)
@@ -96,15 +101,16 @@ namespace Corelibs.AspNetApi.Lucene
             });
         }
 
-        public SearchIndexData[] Search(string searchTerm, SearchType searchType = SearchType.Substring)
+        public SearchIndexData[] Search(string nameSubstring, SearchType searchType = SearchType.Substring)
         {
             var directoryReader = DirectoryReader.Open(_directory);
             var indexSearcher = new IndexSearcher(directoryReader);
 
-            string[] fields = { "name" };
-            var queryParser = new MultiFieldQueryParser(Version, fields, _analazer);
-            var query = queryParser.Parse(searchTerm);
+            var queryParser = new QueryParser(Version, "name", _analyzer);
+            queryParser.AllowLeadingWildcard = true;
 
+            var query = queryParser.Parse($"*{nameSubstring}*");
+            
             var searchResult = indexSearcher.Search(query, 1000);
 
             var result = new List<SearchIndexData>(searchResult.ScoreDocs.Length);
