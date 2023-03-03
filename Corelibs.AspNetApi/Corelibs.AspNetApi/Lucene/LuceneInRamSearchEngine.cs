@@ -1,15 +1,12 @@
 ﻿using Corelibs.Basic.Searching;
 using Lucene.Net.Analysis;
 using Lucene.Net.Analysis.Core;
-using Lucene.Net.Analysis.Standard;
-using Lucene.Net.Analysis.Util;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using Lucene.Net.QueryParsers.Classic;
 using Lucene.Net.Search;
 using Lucene.Net.Store;
 using Lucene.Net.Util;
-using System.IO;
 
 namespace Corelibs.AspNetApi.Lucene
 {
@@ -25,7 +22,6 @@ namespace Corelibs.AspNetApi.Lucene
 
         public LuceneInRamSearchEngine() 
         {
-            //_analyzer = new StandardAnalyzer(Version, CharArraySet.EMPTY_SET);
             _analyzer = new SimpleAnalyzer(Version);
             
             _directory = new RAMDirectory();
@@ -136,7 +132,7 @@ namespace Corelibs.AspNetApi.Lucene
             {
                 action();
             }
-            catch (SynchronizationLockException ex)
+            catch (SynchronizationLockException)
             {
                 return false;
             }
